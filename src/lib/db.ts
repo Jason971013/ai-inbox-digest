@@ -131,13 +131,13 @@ async function mockSupabaseCall(emails: Email[], traceId: string): Promise<Email
   }
   
   let clusterId = 1
-  for (const [title, emailList] of projectGroups) {
+  Array.from(projectGroups).forEach(([title, emailList]) => {
     clusters.push({
       id: `real-cluster-${clusterId++}`,
       title: `【Real】${title}`,
       emails: emailList.map(e => ({ ...e, from: 'masked@example.com' })), // 脱敏处理
     })
-  }
+  })
   
   return clusters
 }
