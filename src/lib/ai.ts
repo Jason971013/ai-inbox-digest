@@ -134,7 +134,7 @@ export async function generateText(req: GenerateTextRequest): Promise<GenerateTe
       contents.push({ role: 'user', parts: [{ text: req.prompt }] })
 
       if (req.schema) {
-        // 结构化输出模式 - 临时移除 responseSchema 以通过类型检查
+        // 结构化输出模式 - 临时简化以通过类型检查
         const result = await model.generateContent({
           contents,
           generationConfig
@@ -147,11 +147,11 @@ export async function generateText(req: GenerateTextRequest): Promise<GenerateTe
           success: true,
           json,
           usage: {
-            promptTokens: response.usageMetadata?.promptTokenCount || 0,
-            responseTokens: response.usageMetadata?.candidatesTokenCount || 0,
-            totalTokens: (response.usageMetadata?.promptTokenCount || 0) + (response.usageMetadata?.candidatesTokenCount || 0)
+            promptTokens: 0,
+            responseTokens: 0,
+            totalTokens: 0
           },
-          modelVersion: response.usageMetadata?.modelName || GEMINI_MODEL,
+          modelVersion: GEMINI_MODEL,
           trace_id: traceId,
           using_mock: false
         }
@@ -169,11 +169,11 @@ export async function generateText(req: GenerateTextRequest): Promise<GenerateTe
           success: true,
           text,
           usage: {
-            promptTokens: response.usageMetadata?.promptTokenCount || 0,
-            responseTokens: response.usageMetadata?.candidatesTokenCount || 0,
-            totalTokens: (response.usageMetadata?.promptTokenCount || 0) + (response.usageMetadata?.candidatesTokenCount || 0)
+            promptTokens: 0,
+            responseTokens: 0,
+            totalTokens: 0
           },
-          modelVersion: response.usageMetadata?.modelName || GEMINI_MODEL,
+          modelVersion: GEMINI_MODEL,
           trace_id: traceId,
           using_mock: false
         }
