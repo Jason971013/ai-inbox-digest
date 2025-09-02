@@ -19,37 +19,13 @@ if (hasGeminiKey) {
   }
 }
 
-// 根据项目需求设定默认策略（你可按需增减）
-const DEFAULT_SAFETY: SafetySetting[] = [
+// 强类型安全设置常量
+const SAFE_SAFETY_SETTINGS: SafetySetting[] = [
   { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
   { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
   { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH }
 ];
-
-// 可选：若你允许外部传入字符串安全配置，提供一个安全归一工具
-function toSafetySettings(
-  input: Array<{ category: string; threshold?: string }> | undefined,
-  forceHigh: boolean
-): SafetySetting[] {
-  const cat: Record<string, HarmCategory> = {
-    HARASSMENT: HarmCategory.HARM_CATEGORY_HARASSMENT,
-    HATE_SPEECH: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-    SEXUALLY_EXPLICIT: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-    DANGEROUS_CONTENT: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-  };
-  const th: Record<string, HarmBlockThreshold> = {
-    BLOCK_NONE: HarmBlockThreshold.BLOCK_NONE,
-    BLOCK_ONLY_HIGH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-    BLOCK_MEDIUM_AND_ABOVE: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-    BLOCK_LOW_AND_ABOVE: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-  };
-  const base = (input && input.length ? input : DEFAULT_SAFETY) as Array<{ category: any; threshold?: any }>;
-  return base.map(s => ({
-    category: cat[s.category] ?? (s.category as HarmCategory), // 若已是枚举则直接透传
-    threshold: forceHigh ? HarmBlockThreshold.BLOCK_ONLY_HIGH : (s.threshold ? th[s.threshold] ?? (s.threshold as HarmBlockThreshold) : HarmBlockThreshold.BLOCK_ONLY_HIGH),
-  }));
-}
 
 // 生成追踪ID
 function generateTraceId(): string {
@@ -124,16 +100,9 @@ export async function generateText(req: GenerateTextRequest): Promise<GenerateTe
 
     // 真实Gemini API调用
     try {
-      // 你在调用 getGenerativeModel 的位置，将下列逻辑替换原来的 safetySettings 三元表达式
-      const appliedSafety: SafetySetting[] = toSafetySettings(
-        // 若你没有外部请求体里的 safety 字段，可传 undefined
-        (req as any)?.safetySettings,
-        (req as any)?.safety === 'BLOCK_ONLY_HIGH'
-      );
-
       const model = genAI!.getGenerativeModel({ 
         model: GEMINI_MODEL,
-        safetySettings: appliedSafety
+        safetySettings: SAFE_SAFETY_SETTINGS
       })
 
       const generationConfig = {
