@@ -54,33 +54,33 @@ jobs:
           if [ -f ".vercel/project.json" ]; then
             echo "Using existing .vercel/project.json"
             # 先拉取 preview 环境配置
-            vercel pull --environment=preview --token=${{ secrets.VERCEL_TOKEN }} || true
-            # 部署到 preview 环境（不带 --prod）
-            DEPLOY_OUTPUT=$(vercel --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1)
+            vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }} || true
+            # 构建项目
+            vercel build --token=${{ secrets.VERCEL_TOKEN }}
+            # 部署到 preview 环境（使用预构建，不带 --prod）
+            DEPLOY_OUTPUT=$(vercel deploy --prebuilt --yes --json --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
           else
             echo "No existing project config, creating new preview deployment"
             # 新项目首次部署到 preview 环境
-            DEPLOY_OUTPUT=$(vercel --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1)
+            vercel build --token=${{ secrets.VERCEL_TOKEN }}
+            DEPLOY_OUTPUT=$(vercel deploy --prebuilt --yes --json --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
           fi
           
           echo "=== Deploy Output ==="
           echo "$DEPLOY_OUTPUT"
           echo "===================="
           
-          # 解析 Preview URL - 多种模式匹配
+          # 从 JSON 输出解析 Preview URL
           PREVIEW_URL=""
           
-          # 模式1: 标准 vercel.app 域名
-          PREVIEW_URL=$(echo "$DEPLOY_OUTPUT" | grep -o 'https://[^[:space:]]*\.vercel\.app' | head -1)
-          
-          # 模式2: 自定义域名或其他格式
-          if [ -z "$PREVIEW_URL" ]; then
-            PREVIEW_URL=$(echo "$DEPLOY_OUTPUT" | grep -o 'https://[^[:space:]]*\.vercel\.app' | head -1)
+          # 尝试从 JSON 输出解析 url
+          if echo "$DEPLOY_OUTPUT" | grep -q '"url"'; then
+            PREVIEW_URL=$(echo "$DEPLOY_OUTPUT" | grep -o '"url":"[^"]*"' | sed 's/"url":"//;s/"//' | head -1)
           fi
           
-          # 模式3: 从 JSON 输出解析
+          # 如果 JSON 解析失败，尝试从标准输出解析
           if [ -z "$PREVIEW_URL" ]; then
-            PREVIEW_URL=$(echo "$DEPLOY_OUTPUT" | grep -o '"url":"[^"]*"' | sed 's/"url":"//;s/"//' | head -1)
+            PREVIEW_URL=$(echo "$DEPLOY_OUTPUT" | grep -o 'https://[^[:space:]]*\.vercel\.app' | head -1)
           fi
           
           if [ -n "$PREVIEW_URL" ]; then
@@ -88,12 +88,20 @@ jobs:
             echo "preview_url=$PREVIEW_URL" >> $GITHUB_OUTPUT
             echo "DEPLOY_URL=$PREVIEW_URL" >> $GITHUB_OUTPUT
             echo "BASE_URL=$PREVIEW_URL" >> $GITHUB_OUTPUT
+            
+            # 写入 Step Summary
+            echo "## 🚀 Deployment Successful" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Preview URL:** $PREVIEW_URL" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Status:** ✅ Ready for testing" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ Failed to parse Preview URL from deploy output"
             echo "preview_url=" >> $GITHUB_OUTPUT
             echo "DEPLOY_URL=" >> $GITHUB_OUTPUT
             echo "BASE_URL=" >> $GITHUB_OUTPUT
-            echo "Deploy output for debugging:"
+            echo "Deploy output for debugging:" >> $GITHUB_STEP_SUMMARY
+            echo "$DEPLOY_OUTPUT" >> $GITHUB_STEP_SUMMARY
             echo "$DEPLOY_OUTPUT"
             exit 1
           fi
