@@ -2,15 +2,20 @@ name: Preview Deploy and Verify
 
 on:
   push:
-    branches-ignore:
-      - main
-      - master
+    branches:
+      - 'preview/*'
+      - 'infra/preview-ci'
   workflow_dispatch:
     inputs:
       branch:
         description: 'Branch to deploy (default: current)'
         required: false
         default: ''
+
+# 并发控制：避免同类工作流并行互卡
+concurrency:
+  group: preview-deploy
+  cancel-in-progress: true
 
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -42,16 +47,20 @@ jobs:
           echo "VERCEL_ORG_ID configured: ${{ secrets.VERCEL_ORG_ID != '' }}"
           echo "VERCEL_PROJECT_ID configured: ${{ secrets.VERCEL_PROJECT_ID != '' }}"
 
-      - name: Deploy to Vercel
+      - name: Deploy to Vercel Preview
         id: deploy
         run: |
-          # 尝试从现有配置获取项目信息
+          # 使用 preview 环境，不触发生产部署
           if [ -f ".vercel/project.json" ]; then
             echo "Using existing .vercel/project.json"
-            DEPLOY_OUTPUT=$(vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1)
+            # 先拉取 preview 环境配置
+            vercel pull --environment=preview --token=${{ secrets.VERCEL_TOKEN }} || true
+            # 部署到 preview 环境（不带 --prod）
+            DEPLOY_OUTPUT=$(vercel --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1)
           else
-            echo "No existing project config, creating new deployment"
-            DEPLOY_OUTPUT=$(vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1)
+            echo "No existing project config, creating new preview deployment"
+            # 新项目首次部署到 preview 环境
+            DEPLOY_OUTPUT=$(vercel --token=${{ secrets.VERCEL_TOKEN }} --yes 2>&1)
           fi
           
           echo "=== Deploy Output ==="
