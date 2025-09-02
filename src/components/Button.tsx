@@ -1,6 +1,8 @@
 import React from 'react';
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+type NativeButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'size'>;
+
+export interface ButtonProps extends NativeButtonProps {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   fullWidth?: boolean;

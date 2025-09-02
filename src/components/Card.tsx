@@ -1,6 +1,8 @@
 import React from 'react';
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+type NativeCardProps = Omit<React.HTMLAttributes<HTMLDivElement>, 'padding'>;
+
+export interface CardProps extends NativeCardProps {
   variant?: 'default' | 'digest' | 'elevated' | 'interactive';
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   interactive?: boolean;

@@ -1,6 +1,8 @@
 import React from 'react';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+type NativeInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>;
+
+export interface InputProps extends NativeInputProps {
   variant?: 'default' | 'error' | 'success';
   size?: 'sm' | 'md' | 'lg';
   leftIcon?: React.ReactNode;

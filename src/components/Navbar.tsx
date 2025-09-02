@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Button } from './Button';
 
-export interface NavbarProps extends React.HTMLAttributes<HTMLElement> {
+type NativeNavbarProps = Omit<React.HTMLAttributes<HTMLElement>, 'size'>;
+
+export interface NavbarProps extends NativeNavbarProps {
   variant?: 'default' | 'elevated' | 'transparent';
   size?: 'sm' | 'md' | 'lg';
   brand?: React.ReactNode;
