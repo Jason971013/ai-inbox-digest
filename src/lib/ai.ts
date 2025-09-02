@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, type SafetySetting } from '@google/generative-ai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
 // Gemini API配置
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
@@ -19,13 +19,25 @@ if (hasGeminiKey) {
   }
 }
 
-// 强类型安全设置常量
-const SAFE_SAFETY_SETTINGS: SafetySetting[] = [
-  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH }
-];
+// 安全设置配置
+const safetySettings = [
+  {
+    category: 'HARM_CATEGORY_HARASSMENT',
+    threshold: 'BLOCK_MEDIUM_AND_ABOVE'
+  },
+  {
+    category: 'HARM_CATEGORY_HATE_SPEECH',
+    threshold: 'BLOCK_MEDIUM_AND_ABOVE'
+  },
+  {
+    category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+    threshold: 'BLOCK_MEDIUM_AND_ABOVE'
+  },
+  {
+    category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+    threshold: 'BLOCK_MEDIUM_AND_ABOVE'
+  }
+]
 
 // 生成追踪ID
 function generateTraceId(): string {
@@ -101,8 +113,7 @@ export async function generateText(req: GenerateTextRequest): Promise<GenerateTe
     // 真实Gemini API调用
     try {
       const model = genAI!.getGenerativeModel({ 
-        model: GEMINI_MODEL,
-        safetySettings: SAFE_SAFETY_SETTINGS
+        model: GEMINI_MODEL
       })
 
       const generationConfig = {
