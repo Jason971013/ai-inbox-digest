@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
@@ -44,27 +44,37 @@ jobs:
         run: |
           npm install -g vercel@latest
           echo "VERCEL_TOKEN configured: ${{ secrets.VERCEL_TOKEN != '' }}"
-          echo "VERCEL_ORG_ID configured: ${{ secrets.VERCEL_ORG_ID != '' }}"
           echo "VERCEL_PROJECT_ID configured: ${{ secrets.VERCEL_PROJECT_ID != '' }}"
+
+      - name: Vercel Pull - Ensure Project Association
+        run: |
+          echo "🔗 Ensuring project association with Vercel..."
+          # 使用 VERCEL_TOKEN 和 VERCEL_PROJECT_ID 进行项目关联
+          if [ -n "$VERCEL_PROJECT_ID" ]; then
+            echo "Using VERCEL_PROJECT_ID: $VERCEL_PROJECT_ID"
+            vercel pull --yes --environment=preview --token=$VERCEL_TOKEN --scope=$VERCEL_PROJECT_ID || true
+          else
+            echo "No VERCEL_PROJECT_ID, using default scope"
+            vercel pull --yes --environment=preview --token=$VERCEL_TOKEN || true
+          fi
+          
+          # 验证项目配置
+          if [ -f ".vercel/project.json" ]; then
+            echo "✅ Project configuration loaded"
+            cat .vercel/project.json | jq '.name, .projectId' || echo "Project config loaded but jq not available"
+          else
+            echo "⚠️ No project config found, will create during deployment"
+          fi
 
       - name: Deploy to Vercel Preview
         id: deploy
         run: |
           # 使用 preview 环境，不触发生产部署
-          if [ -f ".vercel/project.json" ]; then
-            echo "Using existing .vercel/project.json"
-            # 先拉取 preview 环境配置
-            vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }} || true
-            # 构建项目
-            vercel build --token=${{ secrets.VERCEL_TOKEN }}
-            # 部署到 preview 环境（使用预构建，不带 --prod）
-            DEPLOY_OUTPUT=$(vercel deploy --prebuilt --yes --json --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
-          else
-            echo "No existing project config, creating new preview deployment"
-            # 新项目首次部署到 preview 环境
-            vercel build --token=${{ secrets.VERCEL_TOKEN }}
-            DEPLOY_OUTPUT=$(vercel deploy --prebuilt --yes --json --token=${{ secrets.VERCEL_TOKEN }} 2>&1)
-          fi
+          echo "🏗️ Building project..."
+          vercel build --token=$VERCEL_TOKEN
+          
+          echo "🚀 Deploying to preview environment..."
+          DEPLOY_OUTPUT=$(vercel deploy --prebuilt --yes --json --token=$VERCEL_TOKEN 2>&1)
           
           echo "=== Deploy Output ==="
           echo "$DEPLOY_OUTPUT"
