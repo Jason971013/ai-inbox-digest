@@ -1,0 +1,125 @@
+{
+  "project": "AI Inbox Digest - 项目化邮件整理 MVP",
+  "version": "1.0.0",
+  "release_strategy": {
+    "type": "continuous_deployment",
+    "platform": "Vercel",
+    "branch": "main",
+    "auto_deploy": true
+  },
+  "quality_gates": {
+    "test_coverage": {
+      "pass_rate": 0.9,
+      "description": "测试通过率必须≥90%"
+    },
+    "performance": {
+      "p95_response_time": 5000,
+      "description": "P95响应时间必须≤5000ms"
+    },
+    "reliability": {
+      "error_rate": 0.02,
+      "description": "错误率必须≤2%"
+    },
+    "accessibility": {
+      "standard": "WCAG AA",
+      "description": "无障碍标准必须满足AA级别"
+    }
+  },
+  "monitoring": {
+    "health_check": {
+      "endpoint": "/api/health",
+      "frequency": "5分钟",
+      "expected": "{ok: true, using_mock: boolean}"
+    },
+    "api_endpoints": [
+      "/api/emails/cluster",
+      "/api/digest/generate"
+    ],
+    "response_structure": {
+      "success": "boolean",
+      "data": "any (可选)",
+      "error": "object (可选)",
+      "trace_id": "string",
+      "using_mock": "boolean"
+    }
+  },
+  "rollback_triggers": {
+    "stop_on": {
+      "error_rate_gt": 0.02,
+      "p95_ms_gt": 5000,
+      "cost_per_request_gt": 0.01
+    },
+    "description": "当任一指标超过阈值时，自动触发回滚"
+  },
+  "rollback_strategy": {
+    "automatic": {
+      "enabled": true,
+      "threshold": "连续3次健康检查失败"
+    },
+    "manual": {
+      "steps": [
+        "在Vercel控制台回滚到上一个稳定版本",
+        "检查环境变量配置",
+        "验证Mock模式是否正常工作",
+        "重新运行测试套件"
+      ]
+    },
+    "verification": {
+      "health_check": "curl /api/health",
+      "mock_mode": "验证using_mock=true",
+      "test_suite": "npm run test:all"
+    }
+  },
+  "cost_monitoring": {
+    "gemini_api": {
+      "model": "gemini-2.5-flash",
+      "cost_per_1k_tokens": "0.000075",
+      "fallback": "Mock模式（无成本）",
+      "budget_alert": "每月API调用成本超过$10"
+    },
+    "vercel": {
+      "free_tier": "100GB带宽/月",
+      "cost_per_gb": "0.40",
+      "budget_alert": "每月带宽成本超过$5"
+    }
+  },
+  "deployment_checklist": {
+    "pre_deploy": [
+      "所有测试通过（npm run test:all）",
+      "Mock模式验证（npm run verify:mock）",
+      "健康检查正常（curl /api/health）",
+      "环境变量配置正确"
+    ],
+    "post_deploy": [
+      "生产环境健康检查",
+      "关键功能验证",
+      "性能指标监控",
+      "错误率观察"
+    ]
+  },
+  "testing_strategy": {
+    "local": {
+      "commands": [
+        "npm run verify:mock",
+        "npm run verify:baseurl:local",
+        "npm run test:all"
+      ]
+    },
+    "ci": {
+      "workflow": ".github/workflows/verify.yml",
+      "artifacts": "Playwright测试报告",
+      "coverage": "E2E + API + A11y"
+    },
+    "preview": {
+      "command": "BASE_URL=https://预览域名 npm run test:all",
+      "health_check": "curl https://预览域名/api/health"
+    }
+  },
+  "documentation": {
+    "user_guide": "README.md",
+    "api_docs": "内嵌在代码注释中",
+    "test_plan": "docs/test-plan.json",
+    "architecture": "docs/adr.json",
+    "deployment": "docs/pre-flight.json"
+  }
+}

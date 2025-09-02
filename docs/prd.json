@@ -1,0 +1,112 @@
+{
+  "title": "AI Inbox Digest - 项目化邮件整理 MVP",
+  "personas": [
+    {
+      "name": "律师助理",
+      "pain_points": ["案号邮件散乱", "案件时间线混乱", "客户跟进遗漏"],
+      "goals": ["按案号聚合邮件", "快速生成案件摘要", "及时跟进待办事项"],
+      "usage_frequency": "每日多次"
+    },
+    {
+      "name": "自由职业咨询师",
+      "pain_points": ["多项目邮件混杂", "客户沟通记录分散", "项目进度难追踪"],
+      "goals": ["项目邮件自动分类", "生成项目进展报告", "提醒重要截止日期"],
+      "usage_frequency": "每日1-2次"
+    },
+    {
+      "name": "地产经纪人",
+      "pain_points": ["房源邮件杂乱", "客户需求跟进复杂", "交易流程管理困难"],
+      "goals": ["按房源/客户分类邮件", "跟踪交易进展", "及时回复客户询问"],
+      "usage_frequency": "每日多次"
+    }
+  ],
+  "use_cases": {
+    "happy_path": [
+      {
+        "scenario": "日常邮件整理",
+        "input": "用户打开Chrome扩展，选择'生成今日摘要'",
+        "expected_output": "生成3-5个项目簇，每个包含时间线、摘要要点、下一步动作建议",
+        "success_criteria": "用户能在2分钟内了解所有重要邮件内容并确定优先级"
+      },
+      {
+        "scenario": "项目邮件跟进",
+        "input": "用户点击某个案件簇，查看详细时间线",
+        "expected_output": "显示该案件所有相关邮件的时间线，提供结构化摘要和待办事项",
+        "success_criteria": "用户能快速了解项目现状并执行下一步动作"
+      },
+      {
+        "scenario": "一键执行动作",
+        "input": "用户从摘要中点击'草拟回复'按钮",
+        "expected_output": "自动打开Gmail/Outlook并预填回复内容，或创建日历事件/待办事项",
+        "success_criteria": "从摘要到行动执行不超过2次点击"
+      }
+    ],
+    "edge_cases": [
+      {
+        "scenario": "邮件聚类错误",
+        "expected_behavior": "用户可手动合并/拆分邮件簇，系统学习用户偏好",
+        "mitigation": "提供保守聚类策略，支持用户修正"
+      },
+      {
+        "scenario": "摘要内容不准确",
+        "expected_behavior": "每条摘要都有引用来源，用户可追溯验证",
+        "mitigation": "强制引用机制，禁止无依据推测"
+      },
+      {
+        "scenario": "隐私担忧",
+        "expected_behavior": "默认端侧处理，不存储原文，一键清除所有数据",
+        "mitigation": "端侧优先策略，透明的隐私控制"
+      }
+    ]
+  },
+  "non_functional": {
+    "performance": {
+      "首屏渲染": "<2秒",
+      "簇切换": "<300毫秒",
+      "摘要生成": "<20秒(100封邮件)",
+      "动作执行成功率": "≥98%"
+    },
+    "privacy": {
+      "数据存储": "默认仅缓存索引/摘要，不存储原文",
+      "处理方式": "端侧优先，云端需用户明确授权",
+      "数据清除": "一键清除所有数据",
+      "合规性": "GDPR/CCPA合规"
+    },
+    "usability": {
+      "学习成本": "首次使用<10分钟上手",
+      "操作路径": "从摘要到动作≤2次点击",
+      "错误恢复": "明确错误提示和重试机制"
+    }
+  },
+  "metrics": {
+    "activation": {"metric": "激活率", "target": "≥40%", "definition": "完成OAuth+生成首份Digest的用户比例"},
+    "engagement": {"metric": "行动转化率", "target": "≥35%", "definition": "从摘要点击转为草拟回复/日程/待办的比例"},
+    "retention": {"W2": "≥25%", "W4": "≥15%", "definition": "用户在第2周/第4周仍活跃使用"},
+    "satisfaction": {"metric": "质量CSAT", "target": "≥4.0/5.0", "definition": "摘要可读性/完整性/正确率主观评分"},
+    "efficiency": {"metric": "时间节省", "target": "≥20%", "definition": "用户自报的邮件处理时长减少比例"}
+  },
+  "scope": {
+    "must_have": [
+      "Gmail/Outlook OAuth接入与多账号聚合",
+      "邮件聚类(项目/联系人/主题维度)",
+      "日/周Digest视图",
+      "簇内时间线+结构化摘要(含引用)",
+      "一键动作(草拟回复/日历/TODO)",
+      "隐私控制与数据清除",
+      "错误可见与重试机制"
+    ]
+  },
+  "evaluation_plan": {
+    "quality_assurance": [
+      "聚类准确性抽检(小样本≥80%正确率)",
+      "摘要引用完整性检查(≥85%有效引用)",
+      "动作执行成功率测试(≥98%)",
+      "用户主观满意度调研(≥4.0/5.0)"
+    ]
+  },
+  "meta": {
+    "document_version": "1.0",
+    "review_cycle": "每周迭代"
+  }
+}
+

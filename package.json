@@ -1,0 +1,65 @@
+
+
+
+{
+  "name": "ai-inbox-digest",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test tests/e2e/ui.spec.ts",
+    "test:e2e:api": "playwright test tests/e2e/api.spec.ts",
+    "test:a11y": "playwright test tests/e2e/a11y.spec.ts",
+    "test:all": "playwright test",
+    "prep": "npx playwright install --with-deps",
+    "verify:mock": "playwright test",
+    "verify:baseurl:local": "cross-env BASE_URL=http://localhost:3000 playwright test",
+    "verify:preview": "node scripts/verify-preview.js",
+    "verify:all": "npm-run-all -s prep verify:mock verify:baseurl:local",
+    "report": "npx playwright show-report",
+    "deploy:preview": "powershell -ExecutionPolicy Bypass -File scripts/preview-deploy-and-verify.ps1",
+    "deploy:preview:unix": "./scripts/preview-deploy-and-verify.sh",
+    "open:local": "powershell -ExecutionPolicy Bypass -File scripts/open-local.ps1",
+    "open:local:unix": "bash ./scripts/open-local.sh",
+    "verify:local": "powershell -ExecutionPolicy Bypass -File scripts/verify-local.ps1",
+    "verify:local:unix": "bash ./scripts/verify-local.sh",
+    "quick:verify": "powershell -ExecutionPolicy Bypass -File scripts/quick-verify.ps1",
+    "quick:verify:unix": "bash ./scripts/quick-verify.sh",
+    "vercel:deploy": "vercel --prod --yes",
+    "vercel:build": "vercel build",
+    "vercel:dev": "vercel dev"
+  },
+  "dependencies": {
+    "next": "14.0.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "@google/generative-ai": "^0.2.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.0",
+    "@playwright/test": "^1.40.0",
+    "@axe-core/playwright": "^4.8.0",
+    "cross-env": "^7.0.3",
+    "npm-run-all": "^4.1.5",
+    "wait-on": "^7.2.0",
+    "start-server-and-test": "^2.0.3",
+    "execa": "^7.2.0",
+    "prompts": "^2.4.2",
+    "tree-kill": "^1.2.2"
+  }
+}

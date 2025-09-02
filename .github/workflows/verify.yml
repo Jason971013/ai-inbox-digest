@@ -1,0 +1,128 @@
+name: 一键验证
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'BASE_URL for testing (留空则走Mock模式，非空则以该URL运行测试)'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    
+    env:
+      BASE_URL: ${{ github.event.inputs.base_url || '' }}
+      NODE_ENV: test
+      # 确保CI环境使用Mock模式
+      GEMINI_API_KEY: ''
+
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 🟢 设置Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: 📦 安装依赖
+      run: npm ci
+    
+    - name: 🌐 安装Playwright浏览器
+      run: npx playwright install --with-deps
+    
+    - name: 🔧 创建环境配置
+      run: |
+        echo "GEMINI_API_KEY=" > .env.local
+        echo "GEMINI_MODEL=gemini-2.5-flash" >> .env.local
+        echo "NODE_ENV=test" >> .env.local
+        if [ -n "$BASE_URL" ]; then
+          echo "BASE_URL=$BASE_URL" >> .env.local
+        fi
+    
+    - name: 🧪 运行验证测试
+      run: |
+        if [ -n "$BASE_URL" ]; then
+          echo "🔗 使用BASE_URL: $BASE_URL 运行测试"
+          npx playwright test
+        else
+          echo "🎭 使用Mock模式运行测试"
+          npm run verify:mock
+        fi
+    
+    - name: 📊 上传测试结果
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-results-${{ github.run_number }}
+        path: |
+          test-results/
+          playwright-report/
+        retention-days: 30
+    
+    - name: 📈 上传HTML报告
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-html-report-${{ github.run_number }}
+        path: playwright-report/
+        retention-days: 30
+    
+    - name: 📋 生成工作流摘要
+      if: always()
+      run: |
+        echo "## 🎯 验证结果" >> $GITHUB_STEP_SUMMARY
+        if [ -n "$BASE_URL" ]; then
+          echo "**测试环境**: $BASE_URL" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "**测试环境**: Mock模式（无密钥）" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 📊 如何查看报告" >> $GITHUB_STEP_SUMMARY
+        echo "1. **HTML报告**: 下载 \`playwright-html-report-${{ github.run_number }}\` artifact" >> $GITHUB_STEP_SUMMARY
+        echo "2. **完整结果**: 下载 \`playwright-results-${{ github.run_number }}\` artifact" >> $GITHUB_STEP_SUMMARY
+        echo "3. **报告路径**: \`playwright-report/index.html\`" >> $GITHUB_STEP_SUMMARY
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 🔄 如何重新触发" >> $GITHUB_STEP_SUMMARY
+        echo "1. 进入 **Actions** 页面" >> $GITHUB_STEP_SUMMARY
+        echo "2. 选择 **一键验证** workflow" >> $GITHUB_STEP_SUMMARY
+        echo "3. 点击 **Run workflow** 按钮" >> $GITHUB_STEP_SUMMARY
+        echo "4. 可选择输入 **BASE_URL**（预览域名）或留空（Mock模式）" >> $GITHUB_STEP_SUMMARY
+        echo "5. 点击 **Run workflow** 开始执行" >> $GITHUB_STEP_SUMMARY
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 💡 使用说明" >> $GITHUB_STEP_SUMMARY
+        if [ -n "$BASE_URL" ]; then
+          echo "- 本次测试使用指定URL: \`$BASE_URL\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 确保该URL可访问且环境变量配置正确" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- 本次测试使用Mock模式，无需真实API密钥" >> $GITHUB_STEP_SUMMARY
+          echo "- 适合验证基础功能和Mock逻辑" >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: ❌ 检查测试结果
+      if: failure()
+      run: |
+        echo "## ❌ 验证失败" >> $GITHUB_STEP_SUMMARY
+        echo "请检查以下问题：" >> $GITHUB_STEP_SUMMARY
+        if [ -n "$BASE_URL" ]; then
+          echo "1. **URL可访问性**: 确认 \`$BASE_URL\` 可以正常访问" >> $GITHUB_STEP_SUMMARY
+          echo "2. **环境变量**: 检查预览环境的环境变量配置" >> $GITHUB_STEP_SUMMARY
+          echo "3. **CORS策略**: 确认预览环境允许测试请求" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "1. **Mock逻辑**: 检查API响应结构和Mock数据" >> $GITHUB_STEP_SUMMARY
+          echo "2. **测试断言**: 验证测试用例的期望值" >> $GITHUB_STEP_SUMMARY
+          echo "3. **基础功能**: 确认核心功能正常工作" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "💡 **建议**: 下载测试报告查看详细错误信息，或重新运行Mock模式验证基础功能" >> $GITHUB_STEP_SUMMARY

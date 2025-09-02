@@ -1,0 +1,236 @@
+# ADR-json
+
+{
+"context": {
+"project_name": "AI Inbox Digest - 项目化邮件整理 MVP",
+"business_requirements": {
+"target_users": ["律师助理", "自由职业咨询师", "地产经纪人"],
+"core_value_proposition": "通过AI聚类和摘要，将散乱邮件整理为项目化视图，提升邮件处理效率",
+"key_metrics": {
+"activation_rate": "≥40%",
+"action_conversion": "≥35%",
+"w2_retention": "≥25%",
+"csat_score": "≥4.0/5.0"
+}
+},
+"technical_constraints": {
+"performance": "首屏<2秒，摘要生成<20秒(100封邮件)",
+"privacy": "端侧优先，GDPR/CCPA合规",
+"platform": "Chrome扩展为主要载体"
+}
+},
+
+"decisions": [
+{
+"decision_id": "ARCH-001",
+"title": "选择Next.js + Vercel作为主要技术栈",
+"rationale": "Next.js提供优秀的SSR/SSG能力，Vercel提供无缝部署和边缘计算支持，适合快速MVP迭代",
+"alternatives_considered": ["Vue.js + Netlify", "React + AWS Amplify"],
+"trade_offs": "学习成本较低，但vendor lock-in风险"
+},
+{
+"decision_id": "ARCH-002",
+"title": "采用Supabase作为后端服务",
+"rationale": "提供实时数据库、认证、存储一体化解决方案，支持RLS保障数据安全",
+"alternatives_considered": ["Firebase", "AWS Cognito + DynamoDB"],
+"trade_offs": "快速开发但功能受限于平台能力"
+},
+{
+"decision_id": "ARCH-003",
+"title": "混合端侧+云端AI推理架构",
+"rationale": "端侧优先保护隐私，云端兜底保证性能，满足不同用户需求",
+"alternatives_considered": ["纯云端推理", "纯端侧推理"],
+"trade_offs": "架构复杂度增加，但平衡了隐私和性能"
+},
+{
+"decision_id": "ARCH-004",
+"title": "Chrome扩展作为主要入口",
+"rationale": "直接集成邮件客户端，减少用户操作路径，提升使用便利性",
+"alternatives_considered": ["独立Web应用", "移动App"],
+"trade_offs": "分发依赖应用商店审核，但用户体验更佳"
+}
+],
+
+"components": {
+"chrome_extension": {
+"description": "用户界面主体，提供邮件聚类和摘要展示",
+"technology": "Manifest V3, React, Tailwind CSS",
+"responsibilities": ["邮件数据获取", "用户界面渲染", "用户交互处理"],
+"dependencies": ["Gmail/Outlook API", "本地存储", "后端服务"]
+},
+"web_dashboard": {
+"description": "完整功能的Web管理界面",
+"technology": "Next.js 14, TypeScript, Tailwind CSS",
+"responsibilities": ["高级设置管理", "数据导出", "使用统计展示"],
+"dependencies": ["Supabase", "AI服务"]
+},
+"api_gateway": {
+"description": "统一API接入层",
+"technology": "Next.js API Routes, Vercel Edge Functions",
+"responsibilities": ["请求路由", "认证验证", "速率限制"],
+"dependencies": ["Supabase Auth", "外部AI服务"]
+},
+"ai_orchestrator": {
+"description": "AI推理协调服务",
+"technology": "Vercel Edge Functions, OpenAI API",
+"responsibilities": ["端侧/云端推理决策", "结果聚合", "错误处理"],
+"dependencies": ["OpenAI API", "Chrome Summarizer API"]
+},
+"data_layer": {
+"description": "数据存储和管理",
+"technology": "Supabase PostgreSQL, Row Level Security",
+"responsibilities": ["用户数据存储", "摘要索引存储", "访问控制"],
+"dependencies": ["Supabase Auth"]
+}
+},
+
+"interfaces": {
+"internal_apis": [
+{
+"path": "/api/auth/callback",
+"method": "POST",
+"description": "OAuth回调处理",
+"request_schema": {"code": "string", "state": "string"},
+"response_schema": {"access_token": "string", "user_id": "string"}
+},
+{
+"path": "/api/emails/cluster",
+"method": "POST",
+"description": "邮件聚类处理",
+"request_schema": {"emails": "Email[]", "user_preferences": "object"},
+"response_schema": {"clusters": "EmailCluster[]"}
+},
+{
+"path": "/api/digest/generate",
+"method": "POST",
+"description": "生成邮件摘要",
+"request_schema": {"cluster_id": "string", "summary_type": "string"},
+"response_schema": {"summary": "string", "actions": "Action[]", "citations": "Citation[]"}
+},
+{
+"path": "/api/actions/execute",
+"method": "POST",
+"description": "执行用户动作",
+"request_schema": {"action_type": "string", "context": "object"},
+"response_schema": {"success": "boolean", "result": "object"}
+}
+],
+"external_integrations": [
+{
+"service": "Gmail API",
+"purpose": "邮件数据获取",
+"auth_method": "OAuth 2.0",
+"rate_limits": "250 quota units/user/second"
+},
+{
+"service": "Outlook Graph API",
+"purpose": "邮件数据获取",
+"auth_method": "OAuth 2.0",
+"rate_limits": "10,000 requests/10 minutes"
+},
+{
+"service": "OpenAI API",
+"purpose": "AI推理和摘要生成",
+"auth_method": "API Key",
+"rate_limits": "3,500 RPM for GPT-4o-mini"
+}
+]
+},
+
+"data_flow": {
+"email_processing": [
+"用户触发获取邮件 → Chrome扩展调用Gmail/Outlook API",
+"邮件数据预处理 → 去除敏感信息，提取关键字段",
+"聚类算法处理 → 基于主题、联系人、时间等维度分组",
+"AI摘要生成 → 端侧优先，云端兜底策略",
+"结果存储 → Supabase存储摘要索引，不存储原文",
+"用户界面渲染 → 展示聚类结果和摘要"
+],
+"action_execution": [
+"用户点击动作按钮 → 扩展捕获用户意图",
+"动作类型识别 → 草拟回复/创建日历/添加待办",
+"上下文数据准备 → 提取相关邮件信息",
+"外部服务调用 → Gmail Compose/Google Calendar/第三方服务",
+"执行结果反馈 → 成功状态和错误处理"
+]
+},
+
+"security": {
+"authentication": {
+"method": "Supabase Auth + OAuth 2.0",
+"providers": ["Google", "Microsoft"],
+"token_management": "JWT with refresh token rotation"
+},
+"authorization": {
+"model": "Row Level Security (RLS)",
+"policies": ["用户只能访问自己的数据", "管理员可访问聚合统计数据"],
+"api_protection": "Bearer token验证 + 速率限制"
+},
+"data_protection": {
+"encryption": "传输中TLS 1.3，静态AES-256",
+"data_minimization": "不存储邮件原文，仅保留摘要和索引",
+"retention_policy": "用户可随时删除所有数据，默认90天过期"
+},
+"privacy_compliance": {
+"gdpr": "数据便携性、删除权、透明度原则",
+"ccpa": "用户数据控制权和删除权",
+"consent_management": "明确的数据使用授权和撤回机制"
+},
+"api_security": {
+"rate_limiting": "每用户每分钟50次请求",
+"input_validation": "严格的schema验证和SQL注入防护",
+"cors_policy": "仅允许扩展和Web应用域名"
+}
+},
+
+"cost_estimate": {
+"development_phase": {
+"timeline": "8-10周",
+"team_cost": "$45,000 - $60,000",
+"breakdown": {
+"frontend_dev": "$20,000 (4周)",
+"backend_dev": "$15,000 (3周)",
+"ai_integration": "$10,000 (2周)",
+"testing_qa": "$5,000 (1周)"
+}
+},
+"infrastructure_costs": {
+"monthly_fixed": "$200 - $500",
+"breakdown": {
+"vercel_pro": "$20/月",
+"supabase_pro": "$25/月",
+"openai_api": "$150-400/月 (基于用量)",
+"monitoring_tools": "$50/月"
+}
+},
+"variable_costs": {
+"per_user_monthly": "$2-5",
+"breakdown": {
+"ai_inference": "$1.5-3.5 (基于摘要数量)",
+"database_storage": "$0.3-0.8",
+"cdn_bandwidth": "$0.2-0.7"
+}
+},
+"scaling_projections": {
+"1000_users": "$2,500-5,200/月",
+"10000_users": "$22,000-52,000/月",
+"optimization_opportunities": ["端侧推理比例提升", "缓存策略优化", "批量处理"]
+}
+},
+
+"rollback": {
+"database_migrations": {
+"strategy": "保留所有migration文件，支持down migrations",
+"backup_policy": "部署前自动备份，保留7天回滚窗口",
+"rollback_procedure": [
+"停止新请求路由到新版本",
+"执行数据库rollback migration",
+"恢复previous deployment",
+"验证系统功能正常"
+]
+},
+"feature_flags": {
+"implementation": "基于Supabase配置表的动态feature flags",
+"granularity": "用户级别和功能级别控制",
+"emergency_disable": "关键功能可通过管理界面一键禁用"
+},

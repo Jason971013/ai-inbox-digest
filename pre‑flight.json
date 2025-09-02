@@ -1,0 +1,83 @@
+# pre‑flight清单.json
+
+{
+"accounts": [
+{"name": "vercel", "required": true, "owner": "human", "status": "pending", "notes": "用于部署Next.js Web控制台和API服务"},
+{"name": "supabase", "required": true, "owner": "human", "status": "pending", "notes": "PostgreSQL数据库、认证服务、RLS权限控制"},
+{"name": "openai_api", "required": true, "owner": "human", "status": "pending", "notes": "GPT-4o-mini模型用于邮件摘要生成，预算$150-400/月"},
+{"name": "google_cloud", "required": true, "owner": "human", "status": "pending", "notes": "Gmail API和Google Calendar集成OAuth应用"},
+{"name": "microsoft_azure", "required": true, "owner": "human", "status": "pending", "notes": "Outlook Graph API和Microsoft Calendar集成OAuth应用"},
+{"name": "chrome_webstore", "required": true, "owner": "human", "status": "pending", "notes": "Chrome扩展发布和更新管理"}
+],
+"secrets": [
+{"key": "OPENAI_API_KEY", "envs": ["dev", "prod"], "required": true, "can_be_placeholder": true},
+{"key": "SUPABASE_URL", "envs": ["dev", "prod"], "required": true, "can_be_placeholder": false},
+{"key": "SUPABASE_ANON_KEY", "envs": ["dev", "prod"], "required": true, "can_be_placeholder": false},
+{"key": "SUPABASE_SERVICE_ROLE_KEY", "envs": ["prod"], "required": true, "can_be_placeholder": true},
+{"key": "GOOGLE_CLIENT_ID", "envs": ["dev", "prod"], "required": true, "can_be_placeholder": true},
+{"key": "GOOGLE_CLIENT_SECRET", "envs": ["dev", "prod"], "required": true, "can_be_placeholder": true},
+{"key": "MICROSOFT_CLIENT_ID", "envs": ["dev", "prod"], "required": true, "can_be_placeholder": true},
+{"key": "MICROSOFT_CLIENT_SECRET", "envs": ["dev", "prod"], "required": true, "can_be_placeholder": true},
+{"key": "NEXTAUTH_SECRET", "envs": ["dev", "prod"], "required": true, "can_be_placeholder": true},
+{"key": "NEXTAUTH_URL", "envs": ["dev", "prod"], "required": true, "can_be_placeholder": false}
+],
+"policies": {
+"logging": {
+"mask_fields": ["api_key", "email", "access_token", "refresh_token"],
+"trace_id": true
+},
+"data": {
+"pii": "high"
+},
+"security": {
+"cors": "restricted",
+"rate_limit": {
+"per_user_per_day": 1000
+}
+}
+},
+"release": {
+"canary": [1, 5, 20, 50, 100],
+"stop_on": {
+"error_rate_gt": 0.02,
+"p95_ms_gt": 5000,
+"cost_per_req_gt": 0.01
+},
+"rollback": ["revert_last_build", "disable_feature_flags", "database_rollback"]
+},
+"tasks": [
+{"title": "创建Vercel项目并配置部署", "owner": "human", "priority": "H", "depends_on": [], "eta_h": 0.5},
+{"title": "创建Supabase项目并配置数据库", "owner": "human", "priority": "H", "depends_on": [], "eta_h": 1.0},
+{"title": "申请OpenAI API密钥", "owner": "human", "priority": "H", "depends_on": [], "eta_h": 0.2},
+{"title": "创建Google Cloud OAuth应用", "owner": "human", "priority": "H", "depends_on": [], "eta_h": 1.0},
+{"title": "创建Microsoft Azure OAuth应用", "owner": "human", "priority": "M", "depends_on": [], "eta_h": 1.0},
+{"title": "准备Chrome扩展开发者账号", "owner": "human", "priority": "M", "depends_on": [], "eta_h": 0.3},
+{"title": "配置环境变量和密钥管理", "owner": "human", "priority": "H", "depends_on": ["创建Vercel项目并配置部署", "创建Supabase项目并配置数据库"], "eta_h": 0.5},
+{"title": "设置数据库RLS策略", "owner": "human", "priority": "H", "depends_on": ["创建Supabase项目并配置数据库"], "eta_h": 2.0},
+{"title": "配置OAuth回调URL", "owner": "human", "priority": "H", "depends_on": ["创建Google Cloud OAuth应用", "创建Microsoft Azure OAuth应用"], "eta_h": 0.5},
+{"title": "测试API集成和权限", "owner": "human", "priority": "H", "depends_on": ["配置环境变量和密钥管理"], "eta_h": 2.0}
+],
+"risks": [
+{"id": "R1", "desc": "Gmail/Outlook API配额不足导致用户无法同步邮件", "impact": "H", "mitigation": "预申请更高配额，实施智能重试和缓存策略"},
+{"id": "R2", "desc": "OpenAI API成本超预算", "impact": "M", "mitigation": "实施端侧优先策略，设置用户级配额限制"},
+{"id": "R3", "desc": "Chrome扩展审核被拒", "impact": "M", "mitigation": "提前了解审核规则，准备完整的隐私政策和权限说明"},
+{"id": "R4", "desc": "GDPR/CCPA合规性问题", "impact": "H", "mitigation": "实施数据最小化原则，提供一键删除功能，咨询法律顾问"},
+{"id": "R5", "desc": "端侧推理性能不达预期", "impact": "M", "mitigation": "云端兜底策略，优化模型选择和提示词"}
+],
+"missing_info": [
+"具体的案号/PO号正则表达式规则库",
+"端侧推理的具体模型选择和性能基准",
+"云端推理的具体模型和成本预算",
+"集成第三方服务的API配额和限制",
+"具体的定价策略和付费功能边界",
+"邮件聚类算法的具体参数配置",
+"摘要生成的提示词模板",
+"错误处理和重试的具体策略",
+"性能监控的阈值设定",
+"多语言支持的实现方案"
+],
+"meta": {
+"version": "0.1.0",
+"source_doc": ["Brief文档", "PRD-json", "ADR-json", "UI-UX设计规范"]
+}
+}

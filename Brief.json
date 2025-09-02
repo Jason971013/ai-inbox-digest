@@ -1,0 +1,239 @@
+# C端项目化邮件整理Brief要点“AI Inbox Digest
+
+下面是一份可直接用于立项的“AI Inbox Digest（C端项目化邮件整理）MVP版本方案”。已明确功能与承载形态（首选谷歌浏览器扩展+配套Web控制台）、目标/场景/KPI、关键产品决策与验收标准、风格锚点与Brief要点，并附上取证截图与参考来源，便于快速拍板与推进。
+
+参考截图（问题与赛道佐证）
+
+- HubSpot社区：明确寻找“总结支持工单会话与结论”的AI，证明“结构化摘要+结论/行动”价值路径稳健（为我们的邮件摘要→行动链路提供旁证）
+ 出处：[HubSpot Community](https://community.hubspot.com/t5/Tickets-Conversations/Looking-for-an-AI-tool-to-help-summarize-support-ticket/td-p/1194858)
+
+- HN：本地/隐私优先的AI聊天与研究工具VT Chat，验证“端侧优先+数据不出本机”的产品心智与技术可行性
+ 出处：[news.ycombinator.com](https://news.ycombinator.com/item?id=44472734)
+
+- HN：Frigade展示“在产品UI内引导/代操作”，证明“摘要→可执行动作”的可行性与价值
+ 出处：[news.ycombinator.com](https://news.ycombinator.com/item?id=44733892)
+
+- Exploding Topics：AI搜索/GEO监测赛道对比，说明“结构化可验证输出+可操作建议”的市场预期
+ 出处：[Exploding Topics](https://explodingtopics.com/blog/ai-search-monitoring-tools)
+
+- Product Hunt：Eightify等“长内容→高价值结构化摘要”的增长路径，为“摘要即行动”提供参照
+ 出处：[Product Hunt](https://www.producthunt.com/products/eightify-ai-youtube-summary)
+
+- Reddit：用户明确寻找“只做设计不写代码”的专注型AI工具，旁证“窄而精准”的产品策略可被认可（与本项目“只做项目化邮件摘要与行动”一致）
+ 出处：[Reddit](https://www.reddit.com/r/vibecoding/comments/1kii8u5/can_anyone_recommend_an_ai_tool_that_focuses_only/)
+
+1) 产品定位与目标（明确目标/场景/KPI）
+
+- 名称占位：AI Inbox Digest（项目化邮件整理）
+
+- 目标：把“海量杂乱邮件”自动聚类为“项目/案件”时间线，输出可验证摘要与下一步动作，一键执行草拟回复/创建日程/推入待办，形成“日/周Digest”高频工作流。优先服务欧美C端/个体专业人士（律师助理/咨询/地产/招聘/自由职业者/运营）。[Reddit](https://www.reddit.com/r/Automate/comments/1czpp8z/is_there_an_ai_to_open_and_read_through_all_of_my/)
+
+- 核心场景
+
+  - 每日清理：一键生成“今日/本周重点簇”，从摘要直接完成动作
+
+  - 项目复盘：按“案号/项目号/PO号”维度自动串时间线与要点
+
+  - 跟进管理：自动识别“待我/待对方/本周到期”并提醒
+
+  - 周报生成：生成团队可消费的周报（可选发送到邮箱/Slack/Notion）
+
+  这些场景与“结构化摘要→行动→复用”的价值链高度一致，并与端侧隐私趋势契合。[news.ycombinator.com](https://news.ycombinator.com/item?id=44472734)
+
+- MVP期KPI（首月）
+
+  - 激活率：≥40%完成OAuth+首份Digest
+
+  - 行动转化：≥35%摘要点击转为“草拟回复/日程/待办”之一
+
+  - 留存：W2≥25%、W4≥15%
+
+  - 质量CSAT：摘要可读性/完整性/正确率主观≥4/5
+
+  - 时间节省：自报≥20%（邮件处理时长）
+
+  KPI围绕“高频+可操作+可验证输出”设置，以驱动留存与口碑。[Product Hunt](https://www.producthunt.com/products/eightify-ai-youtube-summary)
+
+2) 关键决策（功能与载体）
+
+- 承载形态（首选）：Chrome/Edge 浏览器扩展 + 轻量Web控制台
+
+  理由：
+
+  - 浏览器侧可优先启用本地/端侧能力（Chromium内置Summarizer API、Nano模型入口），降低隐私顾虑与推理成本；弱网或复杂场景再退回云端推理（需用户授权）。[developer.chrome.com](https://developer.chrome.com/docs/ai/scale-summarization)
+
+  - 分发与增长更灵活（Chrome Web Store、PH、Reddit），不受上游CRM生态绑定与抽成限制。[news.ycombinator.com](https://news.ycombinator.com/item?id=44472734)
+
+  - Gmail Add-on/Outlook Add-in 作为迭代候选（提高层级入口），但首发以扩展更快落地。
+
+- 数据与隐私策略（默认强隐私）
+
+  - 默认仅缓存索引/摘要；原文不落地；一键清除；BYOK可选；本地优先推理；云端需二次同意与明示用途。[news.ycombinator.com](https://news.ycombinator.com/item?id=44472734)
+
+- 聚类策略（项目/案件优先）
+
+  - 正则+关键词（案号/PO号/括号编号/主题前缀）+ 语义聚类（嵌入相似度）；保守合并，允许用户手动合并/拆分。该策略与用户“案件/项目时间线”诉求吻合。[Reddit](https://www.reddit.com/r/Automate/comments/1czpp8z/is_there_an_ai_to_open_and_read_through_all_of_my/)
+
+- 摘要策略（可验证/可执行）
+
+  - 输出要点、风险、未决、下一步，每条均带引用（发件人/时间/链接/片段），禁止无依据臆测；提供“草拟回复/日程/待办/等待对方/归档”快捷动作。[news.ycombinator.com](https://news.ycombinator.com/item?id=44733892)
+
+- MVP不做清单
+
+  - 不做全域AI邮箱/通用写作；不做“自动全量群发/批量邮件营销”；不做复杂CRM；聚焦“项目化摘要+行动链路”。
+
+3) MVP功能范围（MoSCoW）
+
+- Must（上线必备）
+
+  - Gmail/Outlook OAuth接入与多账号聚合；整箱聚类（项目/联系人/主题）；日/周Digest视图；簇内时间线+结构化摘要（含引用）；一键动作（草拟回复/日历/TODO）；隐私控制与清除；错误可见与重试。[developer.chrome.com](https://developer.chrome.com/docs/ai/scale-summarization)
+
+- Should
+
+  - 轻量规则中心（案号/PO号正则模板库）；待我/待对方/到期筛选；快捷键；CSV导出。
+
+- Could
+
+  - Notion/Todoist/Slack集成；自定义摘要模版；Digest邮件/Slack推送；简单统计（节省时长/处理趋势）。
+
+- Won’t (MVP)
+
+  - 自动化邮件发送/智能营销；通用文案工作台；团队协作复杂权限。
+
+4) 信息架构与页面草图（文字线框）
+
+- 概览：今日/本周重点簇（高优先级），批量“完成/稍后/归档”；使用习惯入口（快捷键/批处理）
+
+- 簇详情：时间线（最新在上）→ 摘要卡（要点/风险/未决/下一步，附来源引用）→ 推荐动作（草拟回复/日历/待办/等待）
+
+- 任务页：从摘要汇总的待办池，维度筛选（待我/待对方/本周到期/来源簇）
+
+- 设置：隐私（端侧/云端、留存期限）、聚类规则、摘要模板、集成（Calendar/Notion/Todoist/Slack）
+
+5) 验收标准（面向MVP）
+
+- 功能验收
+
+  - OAuth：Gmail/Outlook可接入并拉取近7/30天数据；错误与速率受控
+
+  - 聚类：≥80%项目邮件可正确归入同一簇（小样本抽检）
+
+  - 摘要：≥85%摘要句段带有效引用；≥80%摘要条目可被用户认为“有用/准确”
+
+  - 动作：草拟回复/创建日历/推入待办成功率≥98%；从摘要到动作≤2点击
+
+- 体验验收
+
+  - 首屏渲染<2s；簇切换<300ms；Digest生成（100封/账户）<20s（端侧/云端混合）
+
+  - 隐私：一键清除；不落地原文（默认）；审计日志（可选）
+
+- 业务验收
+
+  - 首月KPI达到“激活≥40%/行动转化≥35%/W2≥25%/CSAT≥4.0”
+
+6) 技术方案（端侧优先，云端兜底）
+
+- 客户端：Chrome/Edge扩展（React/Manifest V3）；控制台Web（Next.js）
+
+- 数据接入：Gmail API/Outlook Graph API（仅元数据+必要邮件体）
+
+- 端侧推理：Chromium Summarizer API/Nano（可在支持浏览器上启用端侧摘要/重排/要点提取）[developer.chrome.com](https://developer.chrome.com/docs/ai/scale-summarization)
+
+- 云端推理（可选）：Node/Go + 队列（BullMQ/Celery），提示词护栏（“必须引用/禁止臆测/结构化JSON”），重试与限速
+
+- 聚类：规则（正则/关键词）+ 语义向量（按主题/发件人会话增强），保守合并，支持手工修正
+
+- 动作集成：Google Calendar、Microsoft Calendar、Notion/Todoist/Slack（选2先做）
+
+- 安全与合规：最小留存、BYOK可选、审计日志；GDPR/CCPA条款模板与DPA随服务提供。[news.ycombinator.com](https://news.ycombinator.com/item?id=44472734)
+
+7) 风格锚点（UI/UX）
+
+- 设计关键词：Calm Productivity（安静高效）、证据优先（可回溯）、行动在侧（次要按钮永远近手）、暗色优先（长时使用舒适）
+
+- 组件语义：摘要=“可执行知识卡”，每条都绑定来源引用；簇=“项目容器”，强调时间线与状态（待我/待对方/到期）
+
+- 文案语气：客观、简洁、可验证（避免承诺；突出“已为你生成X条下一步建议”）
+
+- 可借鉴：Frigade“在UI内引导/代操作”的任务即行动理念；VT Chat“隐私与本地优先”的心智传达。[news.ycombinator.com](https://news.ycombinator.com/item?id=44733892)[news.ycombinator.com](https://news.ycombinator.com/item?id=44472734)
+
+8) 项目计划（4周MVP）
+
+- 第1周：样本采集（10–20个真实邮箱）、案号/PO号规则库、线框稿与PRD；完成Gmail OAuth与基本拉取
+
+- 第2周：聚类（规则+语义）与摘要模板（含引用）；簇视图与Digest页；端侧推理试点
+
+- 第3周：动作集成（草拟回复/日历/待办）；隐私控制与清除；Chrome扩展打包与私发
+
+- 第4周：质量面板（可读性/完整性/正确率抽检）；A/B模板；候补Outlook接入；候补Notion/Todoist
+
+- 里程碑交付：Alpha（周2末）、Beta（周4末）→ 小规模内测名单、PH准备
+
+Eightify/VT Chat/Frigade等路径表明“结构化摘要→行动/导出→习惯化”的节奏可快速达成口碑与留存。[Product Hunt](https://www.producthunt.com/products/eightify-ai-youtube-summary)[news.ycombinator.com](https://news.ycombinator.com/item?id=44472734)[news.ycombinator.com](https://news.ycombinator.com/item?id=44733892)
+
+9) 风险与对策
+
+- 聚类/摘要准确性不足 → 引用强制、保守合并、用户可修正、模板分行业迭代（法律/地产/招聘）[Reddit](https://www.reddit.com/r/Automate/comments/1czpp8z/is_there_an_ai_to_open_and_read_through_all_of_my/)
+
+- 隐私顾虑 → 端侧优先、明示云端用途、默认不落地原文、一键清除、BYOK与日志透明。[news.ycombinator.com](https://news.ycombinator.com/item?id=44472734)
+
+- 分发冷启动 → Chrome扩展+PH+Reddit/IndieHackers；邀请制内测与周报模版增长
+
+- 成本与性能 → 端侧/Nano优先；云端做重任务；配额分层与限速
+
+10) GTM要点
+
+- 冷启动素材：真实案例（前后对比）、“一页Digest节省X分钟”、隐私承诺与可验证摘要
+
+- 渠道：Chrome Web Store、PH、新媒体（律师助理/地产/招聘/自由职业者社群）
+
+- 定价：免费层（近7天+每日配额）；专业版（多账号/更长历史/自动周报/更多集成）
+
+11) Brief要点（对内对外统一口径）
+
+- 我们做什么：把杂乱邮件整理为“项目/案件”时间线与可执行摘要，一键完成回复/日程/待办
+
+- 为谁：需要在邮箱中管理项目的人（律师助理/顾问/地产/招聘/自由职业者/运营）
+
+- 为什么值得：每天少花至少20%时间处理邮件；更快锁定“待我/待对方/到期”项；一步直达行动
+
+- 如何做到：端侧优先+结构化可验证摘要+规则+语义聚类+轻量动作集成
+
+- 品牌语气：安静高效、可信可证、隐私默认
+
+- MVP边界：只做项目化摘要与行动；不做群发营销与泛用写作
+
+- 成功定义：激活≥40%/行动转化≥35%/W2≥25%/CSAT≥4.0（首月）
+
+需要你拍板的3个点
+
+- 首发生态顺序：Gmail→Outlook（建议如此，以加快冷启动）
+
+- 动作优先级：草拟回复与日历肯定先做，Notion/Todoist/Slack三选一优先？
+
+- 隐私默认：启用端侧优先+不落地原文+一键清除为默认策略（建议Yes）
+
+确认后，我将在两周内交付Alpha（可登录、可拉取、可聚类、可摘要、可行动、可清除），并附真实样本的质量评估报告与小范围用户反馈。
+
+参考来源：
+
+- 用户对“整箱读邮件→项目时间线→行动”的明确诉求（案例表达“case #12345”）[Reddit](https://www.reddit.com/r/Automate/comments/1czpp8z/is_there_an_ai_to_open_and_read_through_all_of_my/)
+
+- 本地/隐私优先趋势与可行性（VT Chat/Chromium端侧Summarizer）[news.ycombinator.com](https://news.ycombinator.com/item?id=44472734)[developer.chrome.com](https://developer.chrome.com/docs/ai/scale-summarization)
+
+- “在UI内引导/代操作”的可行性（摘要到行动的参考）[news.ycombinator.com](https://news.ycombinator.com/item?id=44733892)
+
+- “结构化摘要产品”增长参照（Eightify等）[Product Hunt](https://www.producthunt.com/products/eightify-ai-youtube-summary)
+
+- 赛道对比与“结构化可验证输出”的市场预期（AI搜索/GEO）[Exploding Topics](https://explodingtopics.com/blog/ai-search-monitoring-tools)
+
+[PRD-json](C%E7%AB%AF%E9%A1%B9%E7%9B%AE%E5%8C%96%E9%82%AE%E4%BB%B6%E6%95%B4%E7%90%86Brief%E8%A6%81%E7%82%B9%E2%80%9CAI%20Inbox%20Digest%20260c492adcb781929877d9a5064ae269/PRD-json%20260c492adcb78074adb7fd4a5919913b.md)
+
+[ADR-json](C%E7%AB%AF%E9%A1%B9%E7%9B%AE%E5%8C%96%E9%82%AE%E4%BB%B6%E6%95%B4%E7%90%86Brief%E8%A6%81%E7%82%B9%E2%80%9CAI%20Inbox%20Digest%20260c492adcb781929877d9a5064ae269/ADR-json%20260c492adcb78031a8f8d609dda19a22.md)
+
+[UI-UX](C%E7%AB%AF%E9%A1%B9%E7%9B%AE%E5%8C%96%E9%82%AE%E4%BB%B6%E6%95%B4%E7%90%86Brief%E8%A6%81%E7%82%B9%E2%80%9CAI%20Inbox%20Digest%20260c492adcb781929877d9a5064ae269/UI-UX%20260c492adcb780a1a04ef081df38131f.md)
+
+[pre‑flight清单.json](C%E7%AB%AF%E9%A1%B9%E7%9B%AE%E5%8C%96%E9%82%AE%E4%BB%B6%E6%95%B4%E7%90%86Brief%E8%A6%81%E7%82%B9%E2%80%9CAI%20Inbox%20Digest%20260c492adcb781929877d9a5064ae269/pre%E2%80%91flight%E6%B8%85%E5%8D%95%20json%20260c492adcb780bb8273ffeb97b2e105.md)
+
+[准备清单-人读版本](C%E7%AB%AF%E9%A1%B9%E7%9B%AE%E5%8C%96%E9%82%AE%E4%BB%B6%E6%95%B4%E7%90%86Brief%E8%A6%81%E7%82%B9%E2%80%9CAI%20Inbox%20Digest%20260c492adcb781929877d9a5064ae269/%E5%87%86%E5%A4%87%E6%B8%85%E5%8D%95-%E4%BA%BA%E8%AF%BB%E7%89%88%E6%9C%AC%20260c492adcb780539d3cc8d7a54438a3.md)

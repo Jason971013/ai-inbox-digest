@@ -1,0 +1,122 @@
+{
+  "project": "AI Inbox Digest - 项目化邮件整理 MVP",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "id": "ADR-001",
+      "title": "选择Next.js 14作为前端框架",
+      "status": "已采纳",
+      "context": "需要现代化的React框架，支持SSR/SSG和API路由",
+      "decision": "使用Next.js 14 App Router，提供最佳开发体验和性能",
+      "consequences": [
+        "支持文件系统路由",
+        "内置API路由功能",
+        "优秀的开发体验",
+        "良好的SEO支持"
+      ]
+    },
+    {
+      "id": "ADR-002",
+      "title": "使用Tailwind CSS进行样式管理",
+      "status": "已采纳",
+      "context": "需要快速构建响应式UI，保持设计一致性",
+      "decision": "采用Tailwind CSS + 自定义设计令牌，确保UI一致性和可维护性",
+      "consequences": [
+        "快速原型开发",
+        "一致的设计系统",
+        "响应式设计支持",
+        "可定制的设计令牌"
+      ]
+    },
+    {
+      "id": "ADR-003",
+      "title": "选择Google Gemini API作为LLM提供商",
+      "status": "已采纳",
+      "context": "需要强大的AI能力进行邮件摘要生成，OpenAI成本较高",
+      "decision": "使用Google Gemini API (gemini-2.5-flash)，提供成本效益和强大功能",
+      "consequences": [
+        "支持结构化输出(responseSchema)",
+        "内置安全过滤机制",
+        "成本效益优于OpenAI",
+        "支持多种模型选择"
+      ]
+    },
+    {
+      "id": "ADR-004",
+      "title": "实现Mock模式确保测试稳定性",
+      "status": "已采纳",
+      "context": "需要在不配置真实API密钥的情况下运行测试",
+      "decision": "实现智能Mock模式，无密钥时自动使用模拟数据",
+      "consequences": [
+        "测试环境不依赖外部服务",
+        "CI/CD流程稳定可靠",
+        "开发体验良好",
+        "支持半真半假配置"
+      ]
+    },
+    {
+      "id": "ADR-005",
+      "title": "使用Playwright进行E2E测试",
+      "status": "已采纳",
+      "context": "需要全面的端到端测试，包括UI、API和无障碍测试",
+      "decision": "采用Playwright作为主要测试框架，支持多浏览器和移动端",
+      "consequences": [
+        "跨浏览器兼容性测试",
+        "移动端响应式测试",
+        "内置无障碍测试支持",
+        "优秀的测试报告"
+      ]
+    },
+    {
+      "id": "ADR-006",
+      "title": "统一API响应结构",
+      "status": "已采纳",
+      "context": "需要一致的API接口规范，便于前端集成和错误处理",
+      "decision": "所有API统一返回{success, data?, error?, trace_id, using_mock}结构",
+      "consequences": [
+        "前端集成简化",
+        "错误处理统一",
+        "调试信息完整",
+        "Mock模式标识清晰"
+      ]
+    },
+    {
+      "id": "ADR-007",
+      "title": "实现trace_id全链路追踪",
+      "status": "已采纳",
+      "context": "需要完整的请求追踪能力，便于问题定位和调试",
+      "decision": "在每个API请求中生成唯一trace_id，贯穿整个调用链",
+      "consequences": [
+        "问题定位精确",
+        "调试效率提升",
+        "日志关联性强",
+        "监控数据完整"
+      ]
+    }
+  ],
+  "llm": {
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "fallback": "gemini-2.5-pro",
+    "features": [
+      "responseSchema支持",
+      "安全过滤配置",
+      "自动降级机制",
+      "Mock模式回退"
+    ]
+  },
+  "architecture": {
+    "frontend": "Next.js 14 + React 18 + TypeScript",
+    "styling": "Tailwind CSS + 自定义设计令牌",
+    "ai_service": "@google/generative-ai",
+    "testing": "Playwright + @axe-core/playwright",
+    "deployment": "Vercel"
+  },
+  "quality_standards": {
+    "accessibility": "WCAG AA",
+    "test_coverage": "E2E + API + A11y",
+    "performance": "P95 ≤ 5000ms",
+    "reliability": "错误率 ≤ 2%"
+  }
+}
+

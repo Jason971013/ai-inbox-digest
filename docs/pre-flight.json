@@ -1,0 +1,138 @@
+{
+  "project": "AI Inbox Digest - 项目化邮件整理 MVP",
+  "version": "1.0.0",
+  "description": "部署前检查清单，确保系统正常运行",
+  "environment": {
+    "node_version": "18+",
+    "npm_version": "8+",
+    "next_version": "14.0.0",
+    "playwright": "1.40.0+"
+  },
+  "api_keys": {
+    "gemini": {
+      "key": "GEMINI_API_KEY",
+      "required": false,
+      "description": "Gemini API密钥，不配置时自动使用Mock模式",
+      "source": "https://makersuite.google.com/app/apikey",
+      "fallback": "Mock模式，提供完整测试数据"
+    },
+    "model": {
+      "key": "GEMINI_MODEL",
+      "required": false,
+      "default": "gemini-2.5-flash",
+      "description": "Gemini模型选择，支持gemini-2.5-pro作为备选"
+    }
+  },
+  "database": {
+    "supabase": {
+      "url": "SUPABASE_URL",
+      "key": "SUPABASE_ANON_KEY",
+      "required": false,
+      "description": "Supabase配置，不配置时使用内存Mock存储",
+      "fallback": "内存Mock数据，确保功能完整"
+    }
+  },
+  "testing": {
+    "playwright": {
+      "browsers": "chromium-desktop, chromium-mobile",
+      "base_url": "process.env.BASE_URL || http://localhost:3000",
+      "timeout": "60s",
+      "retries": "CI: 2, 本地: 1",
+      "html_report": "playwright-report目录",
+      "junit_report": "test-results/junit目录"
+    },
+    "accessibility": {
+      "standard": "WCAG AA",
+      "tool": "@axe-core/playwright",
+      "coverage": "所有页面和组件"
+    }
+  },
+  "deployment": {
+    "platform": "Vercel",
+    "build_command": "npm run build",
+    "start_command": "npm start",
+    "environment_variables": [
+      "GEMINI_API_KEY (可选)",
+      "GEMINI_MODEL (可选)",
+      "BASE_URL (可选，用于测试)"
+    ]
+  },
+  "policies": {
+    "logging": {
+      "mask_fields": [
+        "access_token",
+        "refresh_token",
+        "email",
+        "api_key"
+      ],
+      "mock_identification": "记录using_mock=true状态",
+      "trace_id": "每个请求生成唯一追踪ID"
+    },
+    "error_handling": {
+      "no_500_errors": "所有异常返回200+success=false",
+      "structured_responses": "统一错误格式{success, error, trace_id}",
+      "graceful_degradation": "API失败时自动回退到Mock模式"
+    },
+    "security": {
+      "content_filtering": "Gemini内置安全过滤，默认Block some",
+      "data_masking": "敏感信息脱敏处理",
+      "cors_protection": "Next.js内置CORS保护"
+    }
+  },
+  "quality_gates": {
+    "test_coverage": {
+      "pass_rate": "≥ 90%",
+      "p95_response_time": "≤ 5000ms",
+      "error_rate": "≤ 2%",
+      "accessibility": "WCAG AA标准"
+    },
+    "mock_mode": {
+      "trigger": "无GEMINI_API_KEY时自动启用",
+      "data_completeness": "提供完整功能测试数据",
+      "test_stability": "确保所有测试通过"
+    }
+  },
+  "monitoring": {
+    "health_check": "/api/health",
+    "expected_response": "{ok: true, now, using_mock, services, environment}",
+    "mock_identification": "响应中包含using_mock字段",
+    "trace_tracking": "所有API响应包含trace_id"
+  },
+  "technical_notes": {
+    "tailwind_plugins": {
+      "status": "暂时移除",
+      "reason": "测试环境中模块加载错误",
+      "impact": "基础样式功能正常",
+      "future": "稳定后重新引入"
+    },
+    "component_dependencies": {
+      "status": "简化重构",
+      "reason": "class-variance-authority、clsx、tailwind-merge等依赖在测试环境中导致模块加载错误",
+      "impact": "组件功能完整，使用标准Tailwind类名，样式一致",
+      "future": "稳定后重新引入高级依赖"
+    },
+    "playwright_reports": {
+      "html_path": "playwright-report",
+      "junit_path": "test-results/junit",
+      "reason": "避免路径冲突"
+    }
+  },
+  "troubleshooting": {
+    "common_issues": [
+      "端口3000被占用：修改端口或关闭占用进程",
+      "Playwright浏览器未安装：npx playwright install --with-deps",
+      "Tailwind样式未加载：已移除插件依赖，使用基础样式",
+      "组件依赖缺失：已重构为使用标准Tailwind类名",
+      "Mock模式未触发：检查GEMINI_API_KEY环境变量",
+      "HTML报告路径冲突：已修复为playwright-report目录"
+    ],
+    "verification_commands": [
+      "健康检查：curl http://localhost:3000/api/health",
+      "Mock测试：npm run verify:mock",
+      "完整测试：npm run test:all",
+      "BASE_URL测试：BASE_URL=http://localhost:3000 npm run test:all",
+      "查看报告：npx playwright show-report playwright-report"
+    ]
+  }
+}
+
